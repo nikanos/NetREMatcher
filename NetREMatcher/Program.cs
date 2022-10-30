@@ -25,7 +25,7 @@ namespace NetREMatcher
                     Console.Error.WriteLine(options.GetUsage());
                     Environment.Exit(-1);
                 }
-                string pattern = !string.IsNullOrEmpty(options.Pattern) ? options.Pattern : File.ReadAllText(options.PatternFile);
+                string pattern = !string.IsNullOrEmpty(options.Pattern) ? options.Pattern : File.ReadAllLines(options.PatternFile).FirstOrDefault();
                 Regex re = new Regex(pattern);
                 using (TextReader tr = (!string.IsNullOrEmpty(options.InputFile) ? new StreamReader(options.InputFile) : Console.In))
                 {
