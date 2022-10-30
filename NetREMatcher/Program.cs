@@ -1,31 +1,32 @@
-﻿using System;
+﻿using CommandLine;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace NetREMatcher
 {
     class Program
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
-            var parser = new CommandLine.Parser(opt =>
+            int result = Parser.Default.ParseArguments<Options>(args).MapResult(
+                            (options) => RunOptions(options),
+                            (errors) => HandleParseError(errors));
+            return result;
+        }
+
+        static int RunOptions(Options options)
+        {
+            int result;
+            try
             {
-                opt.MutuallyExclusive = true;
-                opt.HelpWriter = Console.Error;
-            });
-            var options = new Options();
-            if (parser.ParseArguments(args, options))
-            {
-                if (string.IsNullOrEmpty(options.Pattern) && string.IsNullOrEmpty(options.PatternFile))
-                {
-                    Console.Error.WriteLine(options.GetUsage());
-                    Environment.Exit(-1);
-                }
                 string pattern = !string.IsNullOrEmpty(options.Pattern) ? options.Pattern : File.ReadAllLines(options.PatternFile).FirstOrDefault();
+                if (options.LoggingEnabled)
+                {
+                    Console.Error.WriteLine($"Pattern is: {pattern}");
+                }
                 Regex re = new Regex(pattern);
                 using (TextReader tr = (!string.IsNullOrEmpty(options.InputFile) ? new StreamReader(options.InputFile) : Console.In))
                 {
@@ -35,13 +36,38 @@ namespace NetREMatcher
                         while (null != (line = tr.ReadLine()))
                         {
                             bool matchResult = re.IsMatch(line);
-                            matchResult = options.InvertResults ? !matchResult : matchResult;
-                            if (matchResult)
+                            bool includeResult = options.InvertResults ? !matchResult : matchResult;
+                            if (includeResult)
+                            {
                                 tw.WriteLine(line);
+                            }
+                            if (options.LoggingEnabled)
+                            {
+                                Console.Error.WriteLine($"Line {line} {(matchResult ? "matches" : "does NOT match")} pattern {pattern}");
+                            }
                         }
                     }
                 }
+                result = 0;
             }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine(e.ToString());
+                result = -1;
+            }
+
+            if (options.LoggingEnabled)
+            {
+                Console.Error.WriteLine($"Result Code: {result}");
+            }
+            return result;
+        }
+        static int HandleParseError(IEnumerable<Error> errors)
+        {
+            int result = -1;
+            if (errors.Any(x => x is HelpRequestedError || x is VersionRequestedError))
+                result = 0;
+            return result;
         }
     }
 }
