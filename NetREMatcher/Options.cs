@@ -30,7 +30,7 @@ namespace NetREMatcher
             get
             {
                 yield return new Example("Match 3-digit numbers (Reading/writing from/to standard IO)", new Options { Pattern = "^[0-9]$" });
-                yield return new Example("Match NON 3-digit numbers (Reading/writing from/to standard IO)", new Options { Pattern = "^[0-9]$", InvertResults = true });
+                yield return new Example("Match anything that is NOT a 3-digit number (Reading/writing from/to standard IO)", new Options { Pattern = "^[0-9]$", InvertResults = true });
                 yield return new Example("Match pattern read from file named <pattern.re> and enable logging (Reading/writing from/to standard IO)", new Options { PatternFile = "pattern.re", LoggingEnabled = true });
                 yield return new Example("Match pattern read from file named <pattern.re> and enable logging (Reading/writing from/to given files)", new Options { PatternFile = "pattern.re", LoggingEnabled = true, InputFile = "input.txt", OutputFile = "output.txt" });
             }
