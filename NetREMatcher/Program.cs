@@ -33,18 +33,20 @@ namespace NetREMatcher
                     using (TextWriter tw = (!string.IsNullOrEmpty(options.OutputFile) ? new StreamWriter(options.OutputFile) : Console.Out))
                     {
                         string line;
+                        int currentLineNumber = 1;
                         while (null != (line = tr.ReadLine()))
                         {
                             bool matchResult = re.IsMatch(line);
+                            if (options.LoggingEnabled)
+                            {
+                                Console.Error.WriteLine($"Line #{currentLineNumber} ({line}) {(matchResult ? "matches" : "does NOT match")} pattern {pattern}");
+                            }
                             bool includeResult = options.InvertResults ? !matchResult : matchResult;
                             if (includeResult)
                             {
                                 tw.WriteLine(line);
                             }
-                            if (options.LoggingEnabled)
-                            {
-                                Console.Error.WriteLine($"Line {line} {(matchResult ? "matches" : "does NOT match")} pattern {pattern}");
-                            }
+                            currentLineNumber++;
                         }
                     }
                 }
